@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import org.farmetricsapp.ui.viewmodels.AuthViewModel
+import org.farmetricsapp.presentation.auth.AuthViewModel
 
 @Composable
 fun FarmetricsNavHost(
@@ -16,7 +16,7 @@ fun FarmetricsNavHost(
     authViewModel: AuthViewModel = hiltViewModel(),
     startDestination: String = "auth"
 ) {
-    val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
+    val authState by authViewModel.state.collectAsState()
 
     NavHost(
         navController = navController,

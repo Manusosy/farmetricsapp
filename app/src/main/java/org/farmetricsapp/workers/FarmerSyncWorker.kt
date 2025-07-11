@@ -6,7 +6,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.first
 import org.farmetricsapp.domain.repository.AuthRepository
 import org.farmetricsapp.domain.repository.FarmerRepository
 
@@ -20,14 +19,14 @@ class FarmerSyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
-            // Get current user
-            val currentUser = authRepository.getCurrentUser().first()
-            if (currentUser.data == null) {
+            // Get current officer ID
+            val currentOfficerId = authRepository.getCurrentOfficerId()
+            if (currentOfficerId == null) {
                 return Result.failure()
             }
 
             // Sync farmers
-            farmerRepository.syncFarmers(currentUser.data.id).first()
+            farmerRepository.syncFarmers()
             Result.success()
         } catch (e: Exception) {
             Result.retry()

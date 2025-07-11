@@ -3,6 +3,7 @@ package org.farmetricsapp.data.repository
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import org.farmetricsapp.data.local.dao.VisitDao
 import org.farmetricsapp.data.local.entities.Visit
 import org.farmetricsapp.domain.repository.VisitRepository
@@ -49,7 +50,9 @@ class VisitRepositoryImpl @Inject constructor(
             // Update in Supabase first
             supabaseClient.postgrest["visits"]
                 .update(visit) {
-                    eq("id", visit.id)
+                    filter {
+                        eq("id", visit.id)
+                    }
                 }
 
             // Then update local database
@@ -67,7 +70,9 @@ class VisitRepositoryImpl @Inject constructor(
                     // Delete from Supabase first
                     supabaseClient.postgrest["visits"]
                         .delete {
-                            eq("id", visitId)
+                            filter {
+                                eq("id", visitId)
+                            }
                         }
 
                     // Then delete locally

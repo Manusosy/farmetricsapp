@@ -2,12 +2,15 @@ package org.farmetricsapp.data.repository
 
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.gotrue.auth
+import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.postgrest.query.filter.FilterOperation
+import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import org.farmetricsapp.domain.model.AuthResult
 import org.farmetricsapp.domain.model.SignInCredentials
 import org.farmetricsapp.domain.model.SignUpData
@@ -25,7 +28,10 @@ class AuthRepositoryImpl @Inject constructor(
     
     override suspend fun signIn(credentials: SignInCredentials): AuthResult = withContext(Dispatchers.IO) {
         try {
-            val response = auth.signInWith(Auth.EmailAndPassword(credentials.email, credentials.password))
+            val response = auth.signInWith(Email) {
+                email = credentials.email
+                password = credentials.password
+            }
             
             // Get the field officer ID
             val officerId = getCurrentOfficerId()
@@ -43,13 +49,16 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signUp(data: SignUpData): AuthResult = withContext(Dispatchers.IO) {
         try {
             // Create auth user
-            val response = auth.signUpWith(Auth.EmailAndPassword(data.email, data.password))
+            val response = auth.signUpWith(Email) {
+                email = data.email
+                password = data.password
+            }
             
             // Create field officer record
             val fieldOfficer = postgrest["field_officers"]
                 .insert(
                     values = mapOf(
-                        "user_id" to response.id,
+                        "user_id" to response.user?.id,
                         "full_name" to data.fullName,
                         "email" to data.email,
                         "phone_number" to data.phoneNumber,
@@ -86,7 +95,9 @@ class AuthRepositoryImpl @Inject constructor(
             
             val fieldOfficer = postgrest["field_officers"]
                 .select(columns = Columns.list("officer_id")) {
-                    eq("user_id", userId)
+                    filter {
+                        eq("user_id", userId)
+                    }
                 }
                 .decodeSingleOrNull<FieldOfficerResponse>()
             
@@ -97,7 +108,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 }
 
-@kotlinx.serialization.Serializable
+@Serializable
 private data class FieldOfficerResponse(
     val officerId: String
 ) 

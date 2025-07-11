@@ -7,6 +7,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import org.farmetricsapp.domain.model.SignInCredentials
+import org.farmetricsapp.domain.model.AuthState
 
 @Composable
 fun LoginScreen(
@@ -17,6 +19,18 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    
+    val authState by viewModel.state.collectAsState()
+    
+    // Handle auth state changes
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Authenticated -> {
+                onLoginSuccess()
+            }
+            else -> {}
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -36,7 +50,8 @@ fun LoginScreen(
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = authState !is AuthState.Loading
         )
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -45,20 +60,34 @@ fun LoginScreen(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = authState !is AuthState.Loading
         )
         
         Spacer(modifier = Modifier.height(16.dp))
         
+        // Show error if any
+        if (authState is AuthState.Error) {
+            Text(
+                text = authState.message,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        
         Button(
             onClick = { 
-                viewModel.signIn(email, password) { success ->
-                    if (success) onLoginSuccess()
-                }
+                viewModel.signIn(SignInCredentials(email, password))
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = authState !is AuthState.Loading && email.isNotBlank() && password.isNotBlank()
         ) {
-            Text("Login")
+            if (authState is AuthState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp))
+            } else {
+                Text("Login")
+            }
         }
         
         Spacer(modifier = Modifier.height(16.dp))

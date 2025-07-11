@@ -20,6 +20,10 @@ android {
         
         // Mapbox configuration
         manifestPlaceholders["MAPBOX_ACCESS_TOKEN"] = project.property("MAPBOX_ACCESS_TOKEN") as String? ?: ""
+        
+        // Supabase configuration
+        buildConfigField("String", "SUPABASE_URL", "\"${project.property("SUPABASE_URL") as String? ?: ""}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.property("SUPABASE_ANON_KEY") as String? ?: ""}\"")
     }
 
     buildTypes {
@@ -34,6 +38,7 @@ android {
     
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -66,6 +71,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     // Hilt
     implementation("com.google.dagger:hilt-android:${libs.versions.hilt.get()}")
