@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,8 +43,8 @@ fun AuthHeader(
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            GreenGradientStart,
-                            GreenGradientEnd
+                            Primary,
+                            Secondary
                         )
                     )
                 )
@@ -83,9 +86,7 @@ fun AuthTextField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(TextFieldShape),
+            modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType,
                 imeAction = imeAction
@@ -95,7 +96,7 @@ fun AuthTextField(
             ),
             singleLine = true,
             isError = isError,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
             )
@@ -108,7 +109,7 @@ fun AuthTextField(
         ) {
             Text(
                 text = errorMessage ?: "",
-                color = Error,
+                color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp)
             )
@@ -135,9 +136,7 @@ fun AuthPasswordField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(TextFieldShape),
+            modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = imeAction
@@ -156,9 +155,9 @@ fun AuthPasswordField(
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         imageVector = if (passwordVisible) {
-                            androidx.compose.material.icons.Icons.Default.Visibility
+                            Icons.Default.Visibility
                         } else {
-                            androidx.compose.material.icons.Icons.Default.VisibilityOff
+                            Icons.Default.VisibilityOff
                         },
                         contentDescription = if (passwordVisible) {
                             "Hide password"
@@ -168,7 +167,7 @@ fun AuthPasswordField(
                     )
                 }
             },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline
             )
@@ -181,7 +180,7 @@ fun AuthPasswordField(
         ) {
             Text(
                 text = errorMessage ?: "",
-                color = Error,
+                color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp)
             )
@@ -203,7 +202,6 @@ fun AuthButton(
             .fillMaxWidth()
             .height(56.dp),
         enabled = enabled && !isLoading,
-        shape = ButtonShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = Primary,
             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -232,7 +230,7 @@ fun AuthDivider(
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .weight(1f)
                 .padding(end = 16.dp),
@@ -243,7 +241,7 @@ fun AuthDivider(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 16.dp),

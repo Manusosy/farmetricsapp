@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     kotlin("kapt")
+    kotlin("plugin.serialization") version "1.9.22"
     id("com.google.dagger.hilt.android")
 }
 
@@ -97,6 +98,9 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:gotrue-kt:${libs.versions.supabase.get()}")
     implementation("io.github.jan-tennert.supabase:postgrest-kt:${libs.versions.supabase.get()}")
     implementation("io.github.jan-tennert.supabase:storage-kt:${libs.versions.supabase.get()}")
+
+    // Kotlin Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:${libs.versions.workManager.get()}")

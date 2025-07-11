@@ -11,21 +11,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import org.farmetricsapp.ui.components.auth.*
+import org.farmetricsapp.domain.model.AuthState
 
 @Composable
 fun ForgotPasswordScreen(
-    viewModel: AuthViewModel,
-    onNavigateToLogin: () -> Unit
+    onNavigateBack: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val authState by viewModel.state.collectAsState()
     var email by remember { mutableStateOf("") }
     var resetSent by remember { mutableStateOf(false) }
     
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
+        modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
@@ -54,9 +54,9 @@ fun ForgotPasswordScreen(
                     label = "Email",
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Done,
-                    isError = state.error?.contains("email", ignoreCase = true) == true,
-                    errorMessage = if (state.error?.contains("email", ignoreCase = true) == true) {
-                        state.error
+                    isError = authState is AuthState.Error && authState.message.contains("email", ignoreCase = true),
+                    errorMessage = if (authState is AuthState.Error && authState.message.contains("email", ignoreCase = true)) {
+                        authState.message
                     } else null,
                     onImeAction = {
                         if (email.isNotBlank()) {
@@ -74,8 +74,8 @@ fun ForgotPasswordScreen(
                         viewModel.resetPassword(email)
                         resetSent = true
                     },
-                    enabled = email.isNotBlank(),
-                    isLoading = state.isLoading
+                    enabled = email.isNotBlank() && authState !is AuthState.Loading,
+                    isLoading = authState is AuthState.Loading
                 )
             } else {
                 Text(
@@ -92,8 +92,8 @@ fun ForgotPasswordScreen(
                     onClick = {
                         viewModel.resetPassword(email)
                     },
-                    enabled = !state.isLoading,
-                    isLoading = state.isLoading
+                    enabled = authState !is AuthState.Loading,
+                    isLoading = authState is AuthState.Loading
                 )
             }
             
@@ -104,11 +104,10 @@ fun ForgotPasswordScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             OutlinedButton(
-                onClick = onNavigateToLogin,
+                onClick = onNavigateBack,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = ButtonShape
+                    .height(56.dp)
             ) {
                 Text("Back to Sign In")
             }
@@ -118,12 +117,12 @@ fun ForgotPasswordScreen(
         
         // Error snackbar
         AnimatedVisibility(
-            visible = state.error != null && !state.error.contains("email", ignoreCase = true),
+            visible = authState is AuthState.Error && !authState.message.contains("email", ignoreCase = true),
             enter = slideInVertically { it } + fadeIn(),
             exit = slideOutVertically { it } + fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            state.error?.let { error ->
+            if (authState is AuthState.Error) {
                 Snackbar(
                     modifier = Modifier.padding(16.dp),
                     action = {
@@ -132,7 +131,7 @@ fun ForgotPasswordScreen(
                         }
                     }
                 ) {
-                    Text(error)
+                    Text(authState.message)
                 }
             }
         }

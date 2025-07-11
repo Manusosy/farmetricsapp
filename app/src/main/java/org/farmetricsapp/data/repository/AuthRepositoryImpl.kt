@@ -5,9 +5,6 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.postgrest.query.filter.FilterOperation
-import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -57,7 +54,7 @@ class AuthRepositoryImpl @Inject constructor(
             // Create field officer record
             val fieldOfficer = postgrest["field_officers"]
                 .insert(
-                    values = mapOf(
+                    mapOf(
                         "user_id" to response.user?.id,
                         "full_name" to data.fullName,
                         "email" to data.email,
@@ -67,7 +64,7 @@ class AuthRepositoryImpl @Inject constructor(
                         "location_id" to data.locationId
                     )
                 )
-                .select(columns = Columns.list("officer_id"))
+                .select()
                 .decodeSingle<FieldOfficerResponse>()
             
             AuthResult(success = true, officerId = fieldOfficer.officerId)
@@ -94,10 +91,8 @@ class AuthRepositoryImpl @Inject constructor(
             val userId = auth.currentUserOrNull()?.id ?: return@withContext null
             
             val fieldOfficer = postgrest["field_officers"]
-                .select(columns = Columns.list("officer_id")) {
-                    filter {
-                        eq("user_id", userId)
-                    }
+                .select() {
+                    eq("user_id", userId)
                 }
                 .decodeSingleOrNull<FieldOfficerResponse>()
             

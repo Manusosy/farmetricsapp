@@ -10,7 +10,6 @@ import org.farmetricsapp.domain.model.District
 import org.farmetricsapp.domain.model.GhanaLocations
 import org.farmetricsapp.domain.model.Location
 import org.farmetricsapp.domain.model.Region
-import org.farmetricsapp.ui.theme.TextFieldShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +55,6 @@ fun LocationDropdowns(
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
-                shape = TextFieldShape,
                 isError = isError
             )
             
@@ -95,7 +93,6 @@ fun LocationDropdowns(
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
-                shape = TextFieldShape,
                 isError = isError
             )
             
@@ -133,7 +130,6 @@ fun LocationDropdowns(
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
-                shape = TextFieldShape,
                 isError = isError
             )
             

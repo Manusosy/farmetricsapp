@@ -11,16 +11,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import org.farmetricsapp.ui.components.auth.*
 import org.farmetricsapp.domain.model.SignUpData
+import org.farmetricsapp.domain.model.AuthState
 
 @Composable
 fun RegisterScreen(
-    viewModel: AuthViewModel,
-    onNavigateToLogin: () -> Unit,
-    onRegisterSuccess: () -> Unit
+    onNavigateBack: () -> Unit,
+    onRegisterSuccess: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val authState by viewModel.state.collectAsState()
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -34,9 +36,13 @@ fun RegisterScreen(
     var confirmPasswordError by remember { mutableStateOf<String?>(null) }
     var phoneNumberError by remember { mutableStateOf<String?>(null) }
     
-    LaunchedEffect(state.isAuthenticated) {
-        if (state.isAuthenticated) {
-            onRegisterSuccess()
+    // Handle auth state changes
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Authenticated -> {
+                onRegisterSuccess()
+            }
+            else -> {}
         }
     }
     
@@ -67,10 +73,23 @@ fun RegisterScreen(
         }
     }
     
+    // Helper function to check if form is valid
+    fun isFormValid(): Boolean {
+        return email.isNotBlank() &&
+               password.isNotBlank() &&
+               confirmPassword.isNotBlank() &&
+               fullName.isNotBlank() &&
+               phoneNumber.isNotBlank() &&
+               selectedRegionId.isNotBlank() &&
+               selectedDistrictId.isNotBlank() &&
+               selectedLocationId.isNotBlank() &&
+               password.length >= 8 &&
+               password == confirmPassword &&
+               phoneNumberError == null
+    }
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
+        modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
@@ -93,9 +112,9 @@ fun RegisterScreen(
                 onValueChange = { fullName = it },
                 label = "Full Name",
                 imeAction = ImeAction.Next,
-                isError = state.error?.contains("name", ignoreCase = true) == true,
-                errorMessage = if (state.error?.contains("name", ignoreCase = true) == true) {
-                    state.error
+                isError = authState is AuthState.Error && authState.message.contains("name", ignoreCase = true),
+                errorMessage = if (authState is AuthState.Error && authState.message.contains("name", ignoreCase = true)) {
+                    authState.message
                 } else null
             )
             
@@ -107,9 +126,9 @@ fun RegisterScreen(
                 label = "Email",
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next,
-                isError = state.error?.contains("email", ignoreCase = true) == true,
-                errorMessage = if (state.error?.contains("email", ignoreCase = true) == true) {
-                    state.error
+                isError = authState is AuthState.Error && authState.message.contains("email", ignoreCase = true),
+                errorMessage = if (authState is AuthState.Error && authState.message.contains("email", ignoreCase = true)) {
+                    authState.message
                 } else null
             )
             
@@ -121,9 +140,9 @@ fun RegisterScreen(
                 label = "Phone Number (e.g., +233XXXXXXXXX)",
                 keyboardType = KeyboardType.Phone,
                 imeAction = ImeAction.Next,
-                isError = phoneNumberError != null || state.error?.contains("phone", ignoreCase = true) == true,
-                errorMessage = phoneNumberError ?: if (state.error?.contains("phone", ignoreCase = true) == true) {
-                    state.error
+                isError = phoneNumberError != null || (authState is AuthState.Error && authState.message.contains("phone", ignoreCase = true)),
+                errorMessage = phoneNumberError ?: if (authState is AuthState.Error && authState.message.contains("phone", ignoreCase = true)) {
+                    authState.message
                 } else null
             )
             
@@ -136,9 +155,9 @@ fun RegisterScreen(
                 onRegionSelected = { selectedRegionId = it },
                 onDistrictSelected = { selectedDistrictId = it },
                 onLocationSelected = { selectedLocationId = it },
-                isError = state.error?.contains("location", ignoreCase = true) == true,
-                errorMessage = if (state.error?.contains("location", ignoreCase = true) == true) {
-                    state.error
+                isError = authState is AuthState.Error && authState.message.contains("location", ignoreCase = true),
+                errorMessage = if (authState is AuthState.Error && authState.message.contains("location", ignoreCase = true)) {
+                    authState.message
                 } else null
             )
             
@@ -195,8 +214,8 @@ fun RegisterScreen(
                         )
                     )
                 },
-                enabled = isFormValid(),
-                isLoading = state.isLoading
+                enabled = isFormValid() && authState !is AuthState.Loading,
+                isLoading = authState is AuthState.Loading
             )
             
             Spacer(modifier = Modifier.height(24.dp))
@@ -206,11 +225,10 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             OutlinedButton(
-                onClick = onNavigateToLogin,
+                onClick = onNavigateBack,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = ButtonShape
+                    .height(56.dp)
             ) {
                 Text("Sign In Instead")
             }
@@ -220,17 +238,17 @@ fun RegisterScreen(
         
         // Error snackbar
         AnimatedVisibility(
-            visible = state.error != null && 
-                     !state.error.contains("email", ignoreCase = true) && 
-                     !state.error.contains("password", ignoreCase = true) &&
-                     !state.error.contains("name", ignoreCase = true) &&
-                     !state.error.contains("phone", ignoreCase = true) &&
-                     !state.error.contains("location", ignoreCase = true),
+            visible = authState is AuthState.Error && 
+                     !authState.message.contains("email", ignoreCase = true) && 
+                     !authState.message.contains("password", ignoreCase = true) &&
+                     !authState.message.contains("name", ignoreCase = true) &&
+                     !authState.message.contains("phone", ignoreCase = true) &&
+                     !authState.message.contains("location", ignoreCase = true),
             enter = slideInVertically { it } + fadeIn(),
             exit = slideOutVertically { it } + fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            state.error?.let { error ->
+            if (authState is AuthState.Error) {
                 Snackbar(
                     modifier = Modifier.padding(16.dp),
                     action = {
@@ -239,24 +257,9 @@ fun RegisterScreen(
                         }
                     }
                 ) {
-                    Text(error)
+                    Text(authState.message)
                 }
             }
         }
     }
-}
-
-@Composable
-private fun isFormValid(): Boolean {
-    return email.isNotBlank() &&
-           password.isNotBlank() &&
-           confirmPassword.isNotBlank() &&
-           fullName.isNotBlank() &&
-           phoneNumber.isNotBlank() &&
-           selectedRegionId.isNotBlank() &&
-           selectedDistrictId.isNotBlank() &&
-           selectedLocationId.isNotBlank() &&
-           password.length >= 8 &&
-           password == confirmPassword &&
-           phoneNumberError == null
 } 

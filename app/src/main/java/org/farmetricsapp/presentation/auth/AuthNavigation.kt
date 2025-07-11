@@ -55,7 +55,6 @@ fun AuthNavigation(
             }
         ) {
             LoginScreen(
-                viewModel = viewModel,
                 onNavigateToRegister = {
                     navController.navigate(AuthScreen.Register.route)
                 },
@@ -82,8 +81,7 @@ fun AuthNavigation(
             }
         ) {
             RegisterScreen(
-                viewModel = viewModel,
-                onNavigateToLogin = {
+                onNavigateBack = {
                     navController.navigate(AuthScreen.Login.route) {
                         popUpTo(AuthScreen.Login.route) { inclusive = true }
                     }
@@ -108,8 +106,7 @@ fun AuthNavigation(
             }
         ) {
             ForgotPasswordScreen(
-                viewModel = viewModel,
-                onNavigateToLogin = {
+                onNavigateBack = {
                     navController.navigate(AuthScreen.Login.route) {
                         popUpTo(AuthScreen.Login.route) { inclusive = true }
                     }
